@@ -46,7 +46,7 @@ class RncDecompress {
                     count -= 1
 
                 }
-                return out
+                return out.toUShort().toInt()
 
             }
 
@@ -88,7 +88,7 @@ class RncDecompress {
                     peekCount -= 1
 
                 }
-                return out
+                return  out.toUShort().toInt()
 
             }
 
@@ -107,25 +107,29 @@ class RncDecompress {
             twoWordBuffer.read(2)
             val output = ByteArray(rncHeader.uncompressedSize)
             var outIndex = 0;
-            for (chunkIndex in 0..<rncHeader.packChunks) {
+            while (outIndex < rncHeader.uncompressedSize) {
                 val literalTable = HuffTree();
                 val lengthTable = HuffTree();
                 val positionTable = HuffTree();
-                //println("lengthTable ${lengthTable}")
-                //println("positionTable ${positionTable}")
+                println("lengthTable ${lengthTable}")
+                println("positionTable ${positionTable}")
                 var subchunks = twoWordBuffer.read(16)
-                //println(subchunks)
+                println("Subchunks ${subchunks}")
                 while (subchunks-- > 0) {
                     var literalLength = decodeNext(literalTable)
+                    println ("reading ${literalLength} bytes")
                     if (literalLength > 0u) {
                         while (literalLength-- > 0u) {
                             output[outIndex] = twoWordBuffer.readSourceByte().toByte()
                             outIndex++
                         }
                     }
+                    println ("decoding subchunks ${subchunks} in chunk ${outIndex}/${rncHeader.uncompressedSize}")
                     if (subchunks > 0 ) {
                         val offset = decodeNext(lengthTable) + 1u
                         var count :Int = (decodeNext(positionTable) + 2u).toInt()
+                        println("Offset ${offset}")
+                        println("Count ${count}")
                         while ((count--) !=0) {
                             output[outIndex] = output[outIndex - offset.toInt()]
                             outIndex++

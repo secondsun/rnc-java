@@ -1,6 +1,6 @@
 package dev.secondsun.rnc.dev.secondsun.rnc
 
-data class RncHeader(val sig: String,val  method: Int,val  uncompressedSize: Int,val  compressedSize: Int,val  uncompressedChecksum: Int,val  compressedChecksum: Int,val  leeway: Int,val  packChunks: Int) {
+data class RncHeader(val sig: String,val  method: Int,val  uncompressedSize: Int,val  compressedSize: Int,val  uncompressedChecksum: Int,val  compressedChecksum: Int,val  leeway: Int,val  packChunks: UInt) {
     companion object {
 
         val SIZE : Int = 0x12
@@ -13,8 +13,7 @@ data class RncHeader(val sig: String,val  method: Int,val  uncompressedSize: Int
                  uncompressedChecksum = toInt(bytes[12],bytes[13]),
                  compressedChecksum = toInt(bytes[14],bytes[15]),
                  leeway = bytes[16].toInt(),
-                 packChunks = bytes[17].toInt()
-             )
+                 packChunks = bytes[17].toUByte().toUInt()             )
         }
 
         private fun toInt(byte: Byte, byte1: Byte, byte2: Byte, byte3: Byte): Int {
