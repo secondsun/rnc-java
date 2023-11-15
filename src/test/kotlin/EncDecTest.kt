@@ -1,6 +1,7 @@
 package dev.secondsun.rnc.test
 
 import dev.secondsun.rnc.Main
+import dev.secondsun.rnc.dev.secondsun.rnc.FrameReader
 import dev.secondsun.rnc.dev.secondsun.rnc.RncDecompress
 import dev.secondsun.rnc.dev.secondsun.rnc.RncHeader
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -51,6 +52,15 @@ class EncDecTest {
         assertArrayEquals(expected, uncompressed)
     }
 
+    @Test
+    fun frameReader() {
+        val compressed = with(File("c:\\Users\\secon\\Projects\\rnc-java\\target\\out.bin.rnc")){this.readBytes()}
+        val frameReader = FrameReader(compressed);
+        val firstFrame = frameReader.nextFrame();
+        val secondFrame = frameReader.nextFrame();
+        val thirdFrame = frameReader.nextFrame();
+        val fourthFrame = frameReader.nextFrame();
+    }
 
     @Test
     @Ignore
@@ -68,7 +78,7 @@ class EncDecTest {
                 val fileprefix = "bad_apple_$formattedIndex"
                 println(fileprefix)
                 val outWidth = 256;
-                val outHeight = 192;
+                val outHeight = 256;
                 val file = Main::class.java.getResourceAsStream("/$fileprefix.png")
                 val palette = byteArrayOf(0x00, 0x44, 0x88.toByte(), 0xff.toByte())
                 val colorModel = IndexColorModel(
@@ -78,8 +88,8 @@ class EncDecTest {
                 val outputImage = BufferedImage(outWidth, outHeight, BufferedImage.TYPE_BYTE_INDEXED, colorModel)
                 val image = ImageIO.read(file)
 
-                val resultingImage: Image = image.getScaledInstance(outWidth, outHeight, Image.SCALE_DEFAULT)
-                val scaledImage = BufferedImage(outWidth, outHeight, BufferedImage.TYPE_INT_RGB)
+                val resultingImage: Image = image.getScaledInstance(outWidth, outWidth*3/4, Image.SCALE_DEFAULT)
+                val scaledImage = BufferedImage(outWidth, outWidth, BufferedImage.TYPE_INT_RGB)
                 scaledImage.graphics.drawImage(resultingImage, 0, 0, null)
                 for (xOut in 0..<outWidth) {
                     for (yOut in 0..<outHeight) {
@@ -123,21 +133,21 @@ class EncDecTest {
                             0x44 -> {
                                 byte1 = byte1.shr(1)
                                 byte2 = byte2.shr(1)
-                                byte2 = byte2 + 1
+                                byte2 = byte2 or 0b10000000
                             }
 
                             0x88 -> {
                                 byte1 = byte1.shr(1)
-                                byte1 = byte1 + 1
+                                byte1 = byte1 or 0b10000000
                                 byte2 = byte2.shr(1)
                             }
 
                             0xff -> {
                                 byte1 = byte1.shr(1)
-                                byte1 = byte1 + 1
+                                byte1 = byte1 or 0b10000000
 
                                 byte2 = byte2.shr(1)
-                                byte2 = byte2 + 1
+                                byte2 = byte2 or 0b10000000
                             }
 
                             else -> {

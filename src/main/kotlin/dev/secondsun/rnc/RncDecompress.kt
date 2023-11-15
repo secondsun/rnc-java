@@ -106,33 +106,29 @@ class RncDecompress {
             twoWordBuffer.inputBytes = bytes
             twoWordBuffer.read(2)
             val output = ByteArray(rncHeader.uncompressedSize)
+            var outCounter =rncHeader.uncompressedSize
             var outIndex = 0;
-            while (outIndex < rncHeader.uncompressedSize) {
+            while ((outCounter) > 0 ) {
                 val literalTable = HuffTree();
                 val lengthTable = HuffTree();
                 val positionTable = HuffTree();
-                println("lengthTable ${lengthTable}")
-                println("positionTable ${positionTable}")
                 var subchunks = twoWordBuffer.read(16)
-                println("Subchunks ${subchunks}")
                 while (subchunks-- > 0) {
                     var literalLength = decodeNext(literalTable)
-                    println ("reading ${literalLength} bytes")
                     if (literalLength > 0u) {
                         while (literalLength-- > 0u) {
                             output[outIndex] = twoWordBuffer.readSourceByte().toByte()
                             outIndex++
+                            outCounter--
                         }
                     }
-                    println ("decoding subchunks ${subchunks} in chunk ${outIndex}/${rncHeader.uncompressedSize}")
                     if (subchunks > 0 ) {
                         val offset = decodeNext(lengthTable) + 1u
                         var count :Int = (decodeNext(positionTable) + 2u).toInt()
-                        println("Offset ${offset}")
-                        println("Count ${count}")
                         while ((count--) !=0) {
-                            output[outIndex] = output[outIndex - offset.toInt()]
+                            output[outIndex] = output[(outIndex - offset.toInt()) ]
                             outIndex++
+                            outCounter--
                         }
                     }
                 }
