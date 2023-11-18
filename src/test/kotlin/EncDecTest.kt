@@ -71,7 +71,7 @@ class EncDecTest {
     fun shrinkBadApple() {
         val byte = ByteArrayOutputStream()
         //for (index in 1..6562) {
-        IntStream.rangeClosed(1, 6562)
+        IntStream.rangeClosed(1, 800)
             .parallel()
             .mapToObj { index ->
                 val formattedIndex = if (index < 1000) String.format("%03d", index) else String.format("%4d", index)
@@ -115,6 +115,9 @@ class EncDecTest {
                         outputImage2.setRGB(xOut, yOut, outputImage.getRGB(translatedX, translatedY))
                     }
                 }
+
+                    //ImageIO.write(outputImage2, "PNG", File("output${index}.png"))
+
                 return@mapToObj outputImage2
             }
             .forEachOrdered { outputImage2 ->
@@ -122,39 +125,40 @@ class EncDecTest {
                 var byte2 = 0
 
                 for (y in 0..<outputImage2.height) {
+
                     for (x in 0..<outputImage2.width) {
                         val pixel = outputImage2.getRGB(x, y) and 0x00FF
                         when (pixel) {
                             0x00 -> {
-                                byte1 = byte1.shr(1)
-                                byte2 = byte2.shr(1)
+                                byte1 = byte1.shl(1)
+                                byte2 = byte2.shl(1)
                             }
 
                             0x44 -> {
-                                byte1 = byte1.shr(1)
-                                byte2 = byte2.shr(1)
-                                byte2 = byte2 or 0b10000000
+                                byte1 = byte1.shl(1)
+                                byte2 = byte2.shl(1)
+                                byte2 = byte2 or 0b00000001
                             }
 
                             0x88 -> {
-                                byte1 = byte1.shr(1)
-                                byte1 = byte1 or 0b10000000
-                                byte2 = byte2.shr(1)
+                                byte1 = byte1.shl(1)
+                                byte1 = byte1 or 0b00000001
+                                byte2 = byte2.shl(1)
                             }
 
                             0xff -> {
-                                byte1 = byte1.shr(1)
-                                byte1 = byte1 or 0b10000000
+                                byte1 = byte1.shl(1)
+                                byte1 = byte1 or 0b00000001
 
-                                byte2 = byte2.shr(1)
-                                byte2 = byte2 or 0b10000000
+                                byte2 = byte2.shl(1)
+                                byte2 = byte2 or 0b00000001
                             }
 
                             else -> {
                                 fail("illegal color")
                             }
                         }
-                        if (x % 8 == 0 && x != 0) {
+                        if ((1+x) % 8 == 0) {
                             byte.write(byte1)
                             byte.write(byte2)
                             byte1 = 0

@@ -126,6 +126,9 @@ class RncDecompress {
                         val offset = decodeNext(lengthTable) + 1u
                         var count :Int = (decodeNext(positionTable) + 2u).toInt()
                         while ((count--) !=0) {
+                            if (offset.toInt() >= 0x4000) {
+                                System.out.println("offset ${offset} is too large ")
+                            }
                             output[outIndex] = output[(outIndex - offset.toInt()) ]
                             outIndex++
                             outCounter--
